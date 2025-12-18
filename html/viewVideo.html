@@ -56,7 +56,7 @@
         </div>
 
         <div class="nav_bottom">
-            <!-- Publicité ou autre contenu -->
+            <!-- Publicité ou autre contenu (ne marche plus) -->
         </div>
     </nav>
 
@@ -74,15 +74,16 @@
         </div>
     </section>
 
-    <script src="../js/main.js"></script> <!-- Load JS -->
+    <script src="../js/utlis.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/main.js"></script>
 </body>
 
 <script>
     // Fonction pour récupérer la hauteur de l'élément dans l'iframe
     function getIframeElementHeight() {
         var iframe = document.getElementById('video');
-
-        // Vérifiez si l'iframe est chargé
         iframe.onload = function() {
             setTimeout(function() {
                 var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
@@ -94,11 +95,10 @@
                 } else {
                     console.log('L\'élément avec les classes "jw-video jw-reset" n\'a pas été trouvé.');
                 }
-            }, 3000); // Attendez 3 secondes avant de récupérer la hauteur
+            }, 3000);
         };
     }
 
-    // Appelez la fonction pour récupérer la hauteur
     getIframeElementHeight();
 </script>
 

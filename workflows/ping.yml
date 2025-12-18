@@ -1,0 +1,13 @@
+name: Ping Vercel Site
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Ceci enverra un ping toutes les 5 minutes
+  workflow_dispatch:  # Pour déclencher manuellement si nécessaire
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send ping
+        run: curl -I https://web-site-bd.vercel.app/

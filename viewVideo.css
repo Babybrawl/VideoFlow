@@ -5,35 +5,28 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #4B9168; /* Couleur de la poignée */
-    border-radius: 6px; /* Bord arrondi de la poignée */
+    background-color: #4B9168;
+    border-radius: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #202021; /* Couleur de la piste de défilement */
+    background-color: #202021;
 }
 
-/* Firefox */
-/* Notez que Firefox utilise une approche différente et nécessite une propriété spécifique */
-/* Dans ce cas, nous utilisons la couleur pour la barre et la piste de défilement */
 * {
     scrollbar-color: #4B9168 #202021;
 }
 
-/* Edge et IE */
-/* Notez que Edge et IE utilisent une approche différente et nécessitent des propriétés spécifiques */
-/* Dans ce cas, nous utilisons la couleur pour la poignée et la piste de défilement */
 * {
-    scrollbar-face-color: #4B9168; /* Couleur de la poignée */
-    scrollbar-track-color: #202021; /* Couleur de la piste de défilement */
+    scrollbar-face-color: #4B9168;
+    scrollbar-track-color: #202021;
 }
 
-/* Reset and basic styles */
 html, body {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 0; /* Ajout pour assurer aucune marge interne */
+    padding: 0;
     font-family: 'Poppins', sans-serif;
     background-color: #151517;
     color: #FEFEFE;
@@ -49,7 +42,7 @@ nav.navbar{
     height: 8%;
     position: fixed;
     width: 100%;
-    top: 0; /* Fix navbar to the top of the viewport */
+    top: 0;
 }
 
 nav.navbar .nav_left{
@@ -133,15 +126,15 @@ nav.navbar .nav_right button{
 .sidebar {
     background-color: #202021;
     width: 250px;
-    height: calc(100% - 80px); /* Adjust based on navbar height */
+    height: calc(100% - 80px);
     position: fixed;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding-top: 50px;
-    margin-top: 0; /* Remove margin-top */
-    z-index: 999; /* Ensure it's below navbar */
-    top: 80px; /* Align directly below the navbar */
+    margin-top: 0;
+    z-index: 999;
+    top: 80px;
     transition: 0.4s ease;
     margin-left: 0px; 
 }
@@ -238,7 +231,7 @@ nav.sidebar .nav_top ul li a i{
     width: 100%;
     height: 100%;
     border: none;
-    scroll-margin-top: 50px; /* ajustez la valeur en fonction de la hauteur de votre source ou du décalage souhaité */
+    scroll-margin-top: 50px;
 }
 
 .video-container h3#desc {

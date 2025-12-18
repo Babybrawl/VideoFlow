@@ -5,58 +5,56 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
-// MongoDB URI
 const mongoURI = "mongodb+srv://nicolasbabybrawl:QDRGrf8sq2OMtCKH@babybrawl.aod6irz.mongodb.net/?retryWrites=true&w=majority&appName=Babybrawl";
-const client = new MongoClient(mongoURI);
+const client = new MongoClient(mongoURI, { useUnifiedTopology: true });
 
-// Middleware pour permettre les requêtes CORS
+// 1. CSP & CORS
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self'; " +
+        "frame-src 'self' https://e-player-stream.app https://drive.google.com https://kettledroopingcontinuation.com;" +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kit.fontawesome.com http://www.topcreativeformat.com https://www.topcreativeformat.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://ka-f.fontawesome.com; " +
+        "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com; " +
+        "img-src 'self' data: http: https:; " +
+        "connect-src 'self' https://ka-f.fontawesome.com;"
+    );
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+const rootDir = path.join(__dirname, '.');
+
+app.use(express.static(path.join(rootDir, '../')));
+
+app.use('/js', express.static(path.join(rootDir, 'js')));
+
+// 3. ROUTES
+app.get('/', (req, res) => {
+    res.sendFile(path.join(rootDir, '../', 'index.html'));
 });
 
-// Middleware pour définir la CSP
-app.use((req, res, next) => {
-  res.setHeader('Content-Security-Policy', "default-src 'self'; frame-src 'self' https://e-player-stream.app;");
-  next();
+app.get('/api/movies', async (req, res) => {
+    try {
+        const database = client.db("Films_dataBase");
+        const collection = database.collection("Films");
+        const movies = await collection.find({}).toArray();
+        res.json(movies);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur DB" });
+    }
 });
 
-// Servir les fichiers statiques (CSS, JS, images)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Fonction pour connecter MongoDB
-async function connectToMongo() {
-  try {
-    await client.connect();
-  } catch (error) {
-    console.error("Erreur lors de la connexion à MongoDB :", error);
-    throw error;
-  }
+async function startServer() {
+    try {
+        await client.connect();
+        console.log("Connecté avec succès à MongoDB.");
+        app.listen(port, () => {
+            console.log(`Serveur : http://localhost:${port}`);
+        });
+    } catch (error) {
+        console.error("Erreur :", error);
+    }
 }
 
-// Route pour récupérer tous les films
-app.get('/api/movies', async (req, res) => {
-  try {
-    await connectToMongo();
-
-    const database = client.db("Films_dataBase");
-    const collection = database.collection("Films");
-    const movies = await collection.find({}).toArray();
-
-    res.json(movies);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des films :", error);
-    res.status(500).json({ error: "Une erreur s'est produite lors de la récupération des films." });
-  }
-});
-
-// Route pour servir viewVideo.html
-app.get('/html/viewVideo.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'html', 'viewVideo.html'));
-});
-
-// Écoute du serveur sur le port défini
-app.listen(port, () => {
-  console.log(`Serveur écoutant sur le port ${port}`);
-});
+startServer();

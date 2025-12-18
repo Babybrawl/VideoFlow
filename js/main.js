@@ -1,135 +1,52 @@
-// Fonction pour récupérer tous les films
-async function getAllMovies() {
-    const response = await fetch('/api/movies');  // Utilisez une URL relative
-    const movies = await response.json();
-    console.log("Liste de tous les films :", movies);
-    return movies;
-  }
-  
-  // Fonction pour récupérer un film par son titre
-  async function getMovieByTitle(title) {
-    const movies = await getAllMovies();
-    let foundMovie;
-  
-    movies.forEach(movie => {
-      if (movie.titre === title) {
-        foundMovie = movie;
-      }
-    });
-  
-    console.log(`Film avec le titre ${title} :`, foundMovie);
-    return foundMovie;
-  }
-  
-  // Fonction pour récupérer un film par son index
-  async function getMovieByIndex(index) {
-    const movies = await getAllMovies();
-    const movie = movies[index];
-    console.log(`Film à l'index ${index} :`, movie);
-    return movie;
-  }
-  
-  // Fonction pour récupérer les films par tag
-  async function getMoviesByTag(tag) {
-    const movies = await getAllMovies();
-    const moviesWithTag = movies.filter(movie => movie.tag === tag);
-    console.log(`Films avec le tag ${tag} :`, moviesWithTag);
-    return moviesWithTag;
-  }
-  
-  console.log("Début du script");
-  
-  getMovieByTitle("Fast and Furious").then(movie => {
-    //alert(movie.link);
-  });
-  
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-array = [];
-var click = 0;
-var click3 = 0;
-var clickTag = 0;
 localStorage.setItem("tagDef", 0);
 
 async function videoView(x, y, z, w, episode, saison) {
     try {
-        // Set items in localStorage
         localStorage.setItem("videoTitre", x);
-
-        // Increment trending count for the movie's tag
         incrementTagPopularity(w);
-
-        // Set items in localStorage using the retrieved movie details
         localStorage.setItem("videoSRC", y);
         localStorage.setItem("videoDesc", z);
         localStorage.setItem("episode", episode);
-        localStorage.setItem("saison", saison)
+        localStorage.setItem("saison", saison);
 
-        // Afficher les points du tag dans une alerte
-        const tagPopularityData = JSON.parse(localStorage.getItem("tagPopularity")) || {};
-        const points = tagPopularityData[w] || 0; // Nombre de points, par défaut à 0 si non trouvé
-        //alert(`Le tag "${w}" a maintenant ${points} points.`);
-
-        // Retrieve LastVideo array from localStorage and parse it
         let array = JSON.parse(localStorage.getItem("LastVideo")) || [];
-
-        // Remove null or undefined values from the array
         array = array.filter((value) => value !== null && value !== undefined);
-
-        // Check if the video title (y) already exists in the array
         const existingIndex = array.indexOf(x);
-        if (existingIndex !== -1) {
-            // Remove the existing title from the array
-            array.splice(existingIndex, 1);
-        }
-
-        // Add the current video title to the beginning of the array
-        array.unshift(localStorage.getItem("videoTitre"));
-
-        // Convert the array to a JSON string and store it in localStorage
-        const arrayObject = JSON.stringify(array);
-        localStorage.setItem("LastVideo", arrayObject);
+        if (existingIndex !== -1) array.splice(existingIndex, 1);
+        array.unshift(x);
+        localStorage.setItem("LastVideo", JSON.stringify(array));
     } catch (error) {
-        console.error("Une erreur s'est produite dans videoView :", error);
-        alert("Erreur: " + error.message);  // Afficher le message d'erreur
+        console.error("Erreur videoView :", error);
     }
 }
 
 async function displayTrendingMovies() {
     try {
-        // Retrieve tag popularity data from localStorage
         const tagPopularityData = JSON.parse(localStorage.getItem("tagPopularity")) || {};
 
-        // Sort the tag popularity data by count
         const sortedTags = Object.keys(tagPopularityData).sort((a, b) => tagPopularityData[b] - tagPopularityData[a]);
 
-        // Display top trending movies for each tag
         for (let index = 0; index < sortedTags.length; index++) {
             const tag = sortedTags[index];
             let movies = await getMoviesByTag(tag);
 
-            // If there are not enough movies for this tag, fill with movies from the next tag
             if (movies.length < 2 && index < sortedTags.length - 1) {
                 const nextTag = sortedTags[index + 1];
                 const additionalMovies = await getMoviesByTag(nextTag);
                 movies = movies.concat(additionalMovies.slice(0, 2 - movies.length));
             }
 
-            // Select 2 random movies from the retrieved list, or all if less than 2 available
             const randomMovies = [];
             const numMovies = Math.min(movies.length, 2);
             while (randomMovies.length < numMovies && movies.length > 0) {
                 const randomIndex = Math.floor(Math.random() * movies.length);
-                const selectedMovie = movies.splice(randomIndex, 1)[0]; // Remove the selected movie from the array
+                const selectedMovie = movies.splice(randomIndex, 1)[0];
                 randomMovies.push(selectedMovie);
             }
 
-            // Display the selected movies in the Trending section
             randomMovies.forEach((movie, movieIndex) => {
                 const trendDiv = document.getElementById(`trend${index * 2 + movieIndex + 1}`);
-                trendDiv.innerHTML = ''; // Clear existing content
+                trendDiv.innerHTML = ''; 
 
                 const newLink = document.createElement("a");
                 const newImage = document.createElement("img");
@@ -138,7 +55,6 @@ async function displayTrendingMovies() {
                 newLink.className = "film";
                 newLink.dataset.tag = movie.tag;
 
-                // Use closure to capture current movie
                 newLink.onclick = function () {
                     videoView(movie.titre, movie.link, movie.description, movie.tag, movie.episode, movie.saison);
                 };
@@ -164,14 +80,12 @@ async function start() {
         const movieTitle = localStorage.getItem("videoTitre");
         const movie = await getMovieByTitle(movieTitle);
 
-        // Initialisation des éléments du DOM
         const videoElem = document.getElementById('video');
         const titreElem = document.getElementById('titre');
         const descElem = document.getElementById('desc');
         const serieElem = document.getElementById("serie");
         const saisonElem = document.getElementById("saison");
 
-        // Configuration initiale de la vidéo
         videoElem.src = localStorage.getItem("videoSRC");
         titreElem.innerHTML = movieTitle;
         descElem.innerHTML = localStorage.getItem("videoDesc");
@@ -211,16 +125,14 @@ async function start() {
             const ep = selectedEpisode + 1;
             const sais = selectedSaison + 1;
 
-            // Mise à jour de la source de la vidéo
             if (sais === 1) {
                 videoElem.src = ep === 1 ? movie["link"] : movie["link" + ep];
             } else {
                 videoElem.src = ep === 1 ? movie[sais + "link"] : movie[sais + "link" + ep];
             }
 
-            // Mettre à jour l'épisode en fonction de la saison sélectionnée
             const saisonValue = saisonElem.value;
-            const saisonNumber = saisonValue.substring(6); // Extraire le numéro de saison
+            const saisonNumber = saisonValue.substring(6);
 
             console.log("ta grand mere", movie.episode);
             alert("saison number :", saisonValue);
@@ -228,7 +140,6 @@ async function start() {
                 alert("saisonnuer1");
                 const selectElement = document.getElementById('serie');
 
-                // Supprimer toutes les options
                 while (selectElement.options.length > 0) {
                     selectElement.remove(0);
                 }
@@ -237,7 +148,7 @@ async function start() {
                 for (let i = 1; i <= parseInt(movie.episode); i++) {
                     const option = document.createElement("option");
                     option.text = "Episode " + i;
-                    option.value = i; // Utilisez l'épisode comme valeur
+                    option.value = i;
                     selectElement.appendChild(option);
                 }
             } else {
@@ -273,7 +184,6 @@ async function start2() {
             NewLink.className = "film";
             NewLink.id = movie.titre;
 
-            // Utilisez une fonction immédiate (IIFE) pour capturer la valeur actuelle de y
             (function (currentMovie) {
                 NewLink.onclick = function () {
                     videoView(currentMovie.titre, currentMovie.link, currentMovie.description, currentMovie.tag, currentMovie.episode, currentMovie.saison);
@@ -303,7 +213,6 @@ async function start2() {
                         linkElement.style.visibility = "visible";
                         linkElement.dataset.tag = lastMovie.tag;
 
-                        // Utilisez une fonction immédiate (IIFE) pour capturer la valeur actuelle de i
                         (async function (index) {
                             const movie = await getMovieByTitle(LastArray[index - 1]);
                             document.getElementById(elementId).onclick = function () {
@@ -323,36 +232,24 @@ async function start2() {
     }
 }
 
-
-
-function clear2(){
-        localStorage.clear("LastVideo");
-        array = [];
-        arrayObject = "";
-        document.getElementById("LastVideo").innerHTML = localStorage.getItem("LastVideo");
-}
-
 async function search() {
     try {
         var searchTerm = document.getElementById("search_bar").value.toLowerCase();
-        var selectedTag = localStorage.getItem("tagDef"); // Récupérer le tag sélectionné
+        var selectedTag = localStorage.getItem("tagDef");
         
         var parentDiv = document.getElementById("recherche");
         
         if (searchTerm === "" && selectedTag === "none") {
             parentDiv.style.display = "none";
-            return; // Exit early if both search term and tag are empty
+            return;
         } else {
             parentDiv.style.display = "block";
         }
 
-        // Fetch movies from the API
         const movies = await getAllMovies();
 
-        // Clear previous search results
         parentDiv.innerHTML = '';
 
-        // Iterate through the fetched movies and create elements to display them
         movies.forEach(movie => {
             if ((searchTerm === "" || movie.titre.toLowerCase().includes(searchTerm)) && (selectedTag === "none" || movie.tag === selectedTag)) {
                 
@@ -371,7 +268,6 @@ async function search() {
                 nouveauxLink.href = "html/viewVideo.html";
                 nouveauxLink.dataset.tag = movie.tag;
 
-                // Use a closure to capture the current movie
                 nouveauxLink.onclick = function () {
                     videoView(movie.titre, movie.link, movie.description, movie.tag, movie.episode, movie.saison);
                 };
@@ -388,31 +284,17 @@ async function search() {
     }
 }
 
-function searchCategories() {
-    if (clickTag == 0) {
-        clickTag = 1;
-        document.getElementById("rechercheTag").style.display = "block";
-    } else {
-        clickTag = 0;
-        document.getElementById("rechercheTag").style.display = "none";
-    }
-}
-
 function searchTag(tag) {
-    // Stocker le tag dans le localStorage
     localStorage.setItem("tagDef", tag);
     
-    // Récupérer l'élément ButtonCategories
     const buttonCategories = document.getElementById("ButtonCategories");
     
-    // Vérifier la largeur de la fenêtre et ajuster le texte du bouton en conséquence
+    // Vérifier la largeur de la fenêtre et ajuster en conséquence
     if (window.innerWidth <= 490) {
         buttonCategories.innerHTML = tag;
     } else {
         buttonCategories.innerHTML = "Categories : " + tag;
     }
-    
-    // Appeler la fonction search (assurez-vous que cette fonction est définie ailleurs dans votre code)
     search();
 }
 
@@ -426,7 +308,7 @@ async function plus() {
     
     const LastArray = JSON.parse(localStorage.getItem("LastVideo"));
 
-    for (var i = 5; i <= 9; i++) { // Modification de la plage de la boucle
+    for (var i = 5; i <= 9; i++) {
         const elementId = "a" + i;
         const imgId = "img" + i;
 
@@ -436,17 +318,17 @@ async function plus() {
         var nouveauxLink = document.createElement("a");
         var nouveauxImg = document.createElement("img");
 
-        nouvelleDiv.className = "movies_card"; // Correction de la classe
+        nouvelleDiv.className = "movies_card";
         nouveauxLink.href = "html/viewVideo.html";
         nouveauxLink.className = "film";
-        nouveauxLink.id = "a" + i; // Modification de l'ID
+        nouveauxLink.id = "a" + i;
         nouveauxLink.dataset.tag = lastMovie.tag;
 
         (function (index) {
             nouveauxLink.onclick = function () {
                 videoView(lastMovie.titre, lastMovie.link, lastMovie.description, lastMovie.tag, lastMovie.episode, lastMovie.saison);
             };
-        })(i); // Utilisation de la variable correcte
+        })(i);
 
         nouveauxImg.src = lastMovie.image;
         nouveauxImg.id = "img";
@@ -463,7 +345,6 @@ async function plus() {
 
 async function plus2() {
     try {
-        // Fetch movies from MongoDB
         const movies = await getAllMovies();
 
         // Hide loading elements
@@ -472,7 +353,6 @@ async function plus2() {
         document.getElementById("load_card_news").style.display = "none";
         document.querySelector("#ul_news .load_card").style.display = "none";
 
-        // Iterate through movies and create HTML elements
         for (let i = 4; i < movies.length; i++) {
             const movie = movies[i];
             const nouvelleDiv = document.createElement("div");
@@ -483,17 +363,16 @@ async function plus2() {
             nouvelleDiv.id = "news" + i;
             nouveauxLink.href = "html/viewVideo.html";
             nouveauxLink.className = "film";
-            nouveauxLink.id = movie._id; // Assuming MongoDB document has an "_id" field
-            nouveauxLink.dataset.tag = movie.tag; // Assuming there's a "tag" field in your MongoDB document
+            nouveauxLink.id = movie._id;
+            nouveauxLink.dataset.tag = movie.tag;
 
-            // Use a closure to capture the current movie
             (function (currentMovie) {
                 nouveauxLink.onclick = function () {
                     videoView(currentMovie.titre, currentMovie.link, currentMovie.description, currentMovie.tag, currentMovie.episode, currentMovie.saison);
                 };
             })(movie);
 
-            nouveauxImg.src = movie.image; // Assuming there's an "image" field in your MongoDB document
+            nouveauxImg.src = movie.image;
             nouveauxImg.id = "img";
 
             document.getElementById("ul_news").appendChild(nouvelleDiv);
@@ -512,7 +391,7 @@ async function plus2() {
             for (var l = 4; l < 100; l++) {
                 var element = document.getElementById("Explore" + l);
                 if (element) {
-                    element.remove(); // Supprimer l'élément s'il existe
+                    element.remove();
                 }
             }
 
@@ -520,13 +399,11 @@ async function plus2() {
                 document.getElementById("ul_explore").style.display = "none";
                 localStorage.setItem("ExploreTag", "rien");
             }else{
-                // Récupérer les données de la base de données MongoDB pour le tag spécifié
                 const movies = await getMoviesByTag(tag);
                 localStorage.setItem("ExploreTag", tag);
                 
                 document.getElementById("ul_explore").style.display = "flex";
 
-                // Supprimer tous les enfants des div Explore existantes
                 for (var i = 0; i < 4; i++) {
                     var ExploreDiv = document.getElementById("Explore" + i);
                     while (ExploreDiv.firstChild) {
@@ -549,9 +426,8 @@ async function plus2() {
                     NewLinkExplore.className = "film";
                     NewLinkExplore.id = "trend" + index;
         
-                    // Utiliser une closure pour capturer la valeur actuelle de l'index
                     NewLinkExplore.onclick = function() {
-                        videoView(movie.titre, movie.link, movie.description, movie.tag, movie.episode, movie.saison); // Je suppose que movie._id est l'identifiant unique du film dans votre base de données
+                        videoView(movie.titre, movie.link, movie.description, movie.tag, movie.episode, movie.saison);
                     };
         
                     ExploreDiv.appendChild(NewLinkExplore);
@@ -565,38 +441,6 @@ async function plus2() {
     }
     
 
-    var clickState = ["0" , "0", "0", "0"];
-
-    function toggleChevron(name, x) {
-        if (clickState[x] == 0) {
-            clickState[x] = 1;
-            document.getElementById('chevron-right-' + name).style.display = "none";
-            document.getElementById('chevron-down-' + name).style.display = "block";
-            document.getElementById("ul_" + name).style.display = "none";
-        } else {
-            clickState[x] = 0;
-            document.getElementById('chevron-right-' + name).style.display = "block";
-            document.getElementById('chevron-down-' + name).style.display = "none";
-            document.getElementById("ul_"+ name).style.display = "flex";
-        }
-    }
-
-
-    async function incrementTagPopularity(tag) {
-        try {
-            var popularityData = JSON.parse(localStorage.getItem("tagPopularity")) || {};
-    
-            popularityData[tag] = (popularityData[tag] || 0) + 1;
-    
-            localStorage.setItem("tagPopularity", JSON.stringify(popularityData));
-        } catch (error) {
-            console.error("Une erreur s'est produite dans incrementTagPopularity :", error);
-            alert("Erreur: " + error.message);
-        }
-    }
-    
-    
-
 
     function updateTagsIfEmpty() {
         var keys = Object.keys(baseDeDonnees);
@@ -604,9 +448,8 @@ async function plus2() {
         for (var i = 0; i < keys.length; i++) {
             var video = baseDeDonnees[keys[i]];
     
-            // Vérifier si le tag est vide ou non défini
             if (!video.tag) {
-                video.tag = "action";  // Si le tag est vide, définissez-le sur "action"
+                video.tag = "action";
             }
         }
     }
@@ -615,28 +458,22 @@ async function plus2() {
 
     async function displayTrendingMovies() {
         try {
-            // Retrieve tag popularity data from localStorage
             const tagPopularityData = JSON.parse(localStorage.getItem("tagPopularity")) || {};
     
-            // Sort the tag popularity data by count
             const sortedTags = Object.keys(tagPopularityData).sort((a, b) => tagPopularityData[b] - tagPopularityData[a]);
     
-            // Display top trending movies for each tag
-            let trendIndex = 0; // Track the index of the trending section
+            let trendIndex = 0;
             for (let index = 0; index < sortedTags.length; index++) {
                 const tag = sortedTags[index];
                 let movies = await getMoviesByTag(tag);
     
-                // If there are no movies for this tag, skip to the next one
                 if (movies.length === 0) continue;
     
-                // Select two random movies for this tag
                 const selectedMovies = shuffleArray(movies).slice(0, 2);
     
-                // Fill the trending section with selected movies
                 selectedMovies.forEach((movie, movieIndex) => {
                     const trendDiv = document.getElementById(`trend${trendIndex * 2 + movieIndex + 1}`);
-                    trendDiv.innerHTML = ''; // Clear existing content
+                    trendDiv.innerHTML = '';
     
                     const newLink = document.createElement("a");
                     const newImage = document.createElement("img");
@@ -645,7 +482,6 @@ async function plus2() {
                     newLink.className = "film";
                     newLink.dataset.tag = movie.tag;
     
-                    // Use closure to capture current movie
                     newLink.onclick = function () {
                         videoView(movie.titre, movie.link, movie.description, movie.tag, movie.episode, movie.saison);
                     };
@@ -659,25 +495,20 @@ async function plus2() {
                     trendDiv.appendChild(newLink);
                 });
     
-                trendIndex++; // Move to the next trending section
+                trendIndex++;
             }
     
-            // If there are less than 4 tags with movies, fill the remaining sections with random movies
             while (trendIndex < 2) {
-                // Select random tag and get its movies
                 const randomTag = sortedTags[Math.floor(Math.random() * sortedTags.length)];
                 const movies = await getMoviesByTag(randomTag);
     
-                // If there are no movies for this tag, skip to the next one
                 if (movies.length === 0) continue;
     
-                // Select two random movies for this tag
                 const selectedMovies = shuffleArray(movies).slice(0, 2);
     
-                // Fill the trending section with selected movies
                 selectedMovies.forEach((movie, movieIndex) => {
                     const trendDiv = document.getElementById(`trend${trendIndex * 2 + movieIndex + 1}`);
-                    trendDiv.innerHTML = ''; // Clear existing content
+                    trendDiv.innerHTML = '';
     
                     const newLink = document.createElement("a");
                     const newImage = document.createElement("img");
@@ -686,7 +517,6 @@ async function plus2() {
                     newLink.className = "film";
                     newLink.dataset.tag = movie.tag;
     
-                    // Use closure to capture current movie
                     newLink.onclick = function () {
                         videoView(movie.titre, movie.link, movie.description, movie.tag, movie.episode, movie.saison);
                     };
@@ -700,20 +530,11 @@ async function plus2() {
                     trendDiv.appendChild(newLink);
                 });
     
-                trendIndex++; // Move to the next trending section
+                trendIndex++;
             }
         } catch (error) {
             console.error("Une erreur s'est produite dans la fonction displayTrendingMovies :", error.message);
         }
-    }
-    
-    // Function to shuffle array elements
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]]; // Swap elements
-        }
-        return array;
     }
     
     async function plus3(){
@@ -737,9 +558,9 @@ async function plus2() {
             do {
                 const randomIndex = Math.floor(Math.random() * movies.length);
                 randomMovie = movies[randomIndex];
-            } while (filmUtiliser === randomMovie.titre); // Assurez-vous que le film est différent à chaque itération
+            } while (filmUtiliser === randomMovie.titre);
             
-            filmUtiliser = randomMovie.titre; // Mettez à jour le film utilisé
+            filmUtiliser = randomMovie.titre;
 
             var nouvelleDiv = document.createElement("div");
             var nouveauxLink = document.createElement("a");
@@ -792,14 +613,6 @@ async function plus2() {
             nouvelleDiv.appendChild(nouveauxLink);
             nouveauxLink.appendChild(nouvelleimage);
         }
-    }
-
-    function suite(resultat) {
-        let suite = [];
-        for (let i = 1; i <= resultat; i++) {
-            suite.push(i);
-        }
-        return suite;
     }
 
 
@@ -878,13 +691,13 @@ async function change(x, saison) {
 
     } catch (error) {
         console.error("Une erreur s'est produite dans la fonction change :", error);
-        alert("Erreur: " + error.message); // Afficher le message d'erreur
+        alert("Erreur: " + error.message);
     }
 }
 
 async function populateCatalogue() {
     try {
-        const movies = await getAllMovies(); // Fonction hypothétique pour récupérer tous les films
+        const movies = await getAllMovies();
         console.log("Liste de tous les films :", movies);
 
         const catalogueDiv = document.getElementById("cata");
@@ -916,15 +729,6 @@ async function populateCatalogue() {
         });
     } catch (error) {
         console.error("Une erreur s'est produite lors du peuplement du catalogue :", error);
-        alert("Erreur: " + error.message); // Afficher le message d'erreur
-    }
-}
-
-
-function clickMenu() {
-    if (document.getElementById("sidebar").style.marginLeft == "-250px" || document.getElementById("sidebar").style.marginLeft == "") {
-        document.getElementById("sidebar").style.marginLeft = "0px";
-    } else {
-        document.getElementById("sidebar").style.marginLeft = "-250px";
+        alert("Erreur: " + error.message);
     }
 }

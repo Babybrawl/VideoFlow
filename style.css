@@ -18,27 +18,21 @@ body{
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #4B9168; /* Couleur de la poignée */
-    border-radius: 6px; /* Bord arrondi de la poignée */
+    background-color: #4B9168;
+    border-radius: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #202021; /* Couleur de la piste de défilement */
+    background-color: #202021;
 }
 
-/* Firefox */
-/* Notez que Firefox utilise une approche différente et nécessite une propriété spécifique */
-/* Dans ce cas, nous utilisons la couleur pour la barre et la piste de défilement */
 * {
     scrollbar-color: #4B9168 #202021;
 }
 
-/* Edge et IE */
-/* Notez que Edge et IE utilisent une approche différente et nécessitent des propriétés spécifiques */
-/* Dans ce cas, nous utilisons la couleur pour la poignée et la piste de défilement */
 * {
-    scrollbar-face-color: #4B9168; /* Couleur de la poignée */
-    scrollbar-track-color: #202021; /* Couleur de la piste de défilement */
+    scrollbar-face-color: #4B9168; 
+    scrollbar-track-color: #202021;
 }
 
 .hide-element {
